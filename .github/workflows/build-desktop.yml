@@ -1,0 +1,102 @@
+name: Build Talk Desktop (Windows & macOS)
+
+# Builds the Nextcloud Talk Desktop client for Windows and macOS.
+#
+# Each job clones the upstream source (nextcloud/talk_desktop) and builds a
+# native installer on the matching OS runner, because:
+#   * macOS (.dmg) builds require macOS tooling (hdiutil / codesign)
+#   * Windows (.exe) builds run natively on a Windows runner without Wine
+#
+# Artifacts (installers) are uploaded to the workflow run. Trigger manually
+# from the Actions tab (workflow_dispatch) or on pushes to the build branch.
+
+on:
+  push:
+    branches:
+      - claude/nextcloud-talk-desktop-app-T3xzi
+    paths:
+      - '.github/workflows/build-desktop.yml'
+      - 'scripts/build.sh'
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Upstream branch or tag of nextcloud/talk_desktop to build'
+        required: false
+        default: 'main'
+      platforms:
+        description: 'Which platforms to build'
+        required: false
+        default: 'windows,macos'
+        type: choice
+        options:
+          - 'windows,macos'
+          - 'windows'
+          - 'macos'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows
+            os: windows-latest
+            platform: win
+          - name: macos
+            os: macos-latest
+            platform: mac
+    steps:
+      - name: Check out build repo
+        uses: actions/checkout@v4
+
+      - name: Skip platform if not selected
+        id: gate
+        shell: bash
+        run: |
+          SELECTED="${{ github.event.inputs.platforms || 'windows,macos' }}"
+          if [[ ",$SELECTED," == *",${{ matrix.name }},"* ]]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping ${{ matrix.name }} (not in selection: $SELECTED)"
+          fi
+
+      - name: Set up Node.js
+        if: steps.gate.outputs.run == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Build Talk Desktop
+        if: steps.gate.outputs.run == 'true'
+        shell: bash
+        env:
+          TALK_DESKTOP_REF: ${{ github.event.inputs.ref || 'main' }}
+          # Build unsigned by default. To produce signed builds, add the
+          # appropriate secrets and remove this / set the CSC_* vars.
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: bash scripts/build.sh ${{ matrix.platform }}
+
+      - name: Upload installers
+        if: steps.gate.outputs.run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: talk-desktop-${{ matrix.name }}
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            upstream/dist/**/*.exe
+            upstream/dist/**/*.dmg
+            upstream/dist/**/*.zip
+            upstream/dist/**/*.blockmap
+            upstream/dist/**/*.yml
+            upstream/dist/**/*.pkg
+            upstream/out/**/*.exe
+            upstream/out/**/*.dmg
+            upstream/release/**/*.exe
+            upstream/release/**/*.dmg

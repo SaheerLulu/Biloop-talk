@@ -1,0 +1,15 @@
+# Cloned upstream source (fetched by scripts/build.sh)
+/upstream/
+
+# Build output
+dist/
+out/
+release/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# OS cruft
+.DS_Store
+Thumbs.db

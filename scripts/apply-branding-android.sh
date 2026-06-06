@@ -41,7 +41,7 @@ if [[ -f "$SETUP" ]]; then
   sed -E -i \
     -e "s#(<string name=\"nc_app_name\">)[^<]*(</string>)#\1${APP_NAME}\2#" \
     -e "s#(<string name=\"nc_app_product_name\">)[^<]*(</string>)#\1${APP_NAME}\2#" \
-    -e "s#(<string name=\"nc_server_product_name\">)[^<]*(</string>)#\1Biloop#" \
+    -e "s#(<string name=\"nc_server_product_name\">)[^<]*(</string>)#\1Biloop\2#" \
     "$SETUP"
   echo "    + app name -> ${APP_NAME}, server product name -> Biloop"
 else

@@ -46,11 +46,14 @@ const overrides = {
   brandColor: b.brandColor,
   brandGradient: b.brandGradient,
   brandFontColor: b.brandFontColor,
-  primaryColor: b.brandColor,
-  backgroundColor: b.brandColor,
   helpUrl: b.helpUrl,
   privacyUrl: b.privacyUrl,
 };
+// NOTE: setting primaryColor/backgroundColor here flips the upstream
+// `withThemingOverrides` flag, which then requires pre-generated Nextcloud
+// style overrides (scripts/override-nextcloud-styles.mjs) or the build fails.
+// brandColor already themes the welcome/splash/installer; the in-app Talk UI
+// follows the connected server's theme.
 fs.writeFileSync(outPath, JSON.stringify(overrides, null, 2) + '\n');
 console.log('    + .overrides/build.config.json (isBranded=true): ' + b.productName);
 NODE

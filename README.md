@@ -89,7 +89,7 @@ merges over its defaults and flips `BUILD_CONFIG.isBranded` to `true`.
 What gets rebranded:
 
 - **App name** (window title, login/help screens, About, user-agent) → `Biloop Talk`
-- **Brand colors** → primary `#6C2BD9`, matching gradient and font color
+- **Brand colors** → primary `#502C6F`, loop gradient `#3D1063` → `#8445EE`
 - **`isBranded` behavior** → hides the upstream Nextcloud homepage / issues /
   source links and disables the GitHub release update-checker
 - **App icon** → `img/icons/icon.{ico,icns,png}` used by electron-forge for the
@@ -103,16 +103,63 @@ Branding assets:
 | File | Purpose |
 | --- | --- |
 | `branding/branding.json` | Name, colors and metadata (single source of truth) |
-| `branding/icon.png` | 1024×1024 master icon |
-| `branding/icon.ico` | Multi-size Windows icon |
-| `branding/icon.svg` | Editable vector source |
+| `branding/source/logomark.png` | Official Biloop logo (loop is extracted as the icon) |
+| `branding/source/wordmark-*.png` | Full "Biloop" wordmarks (purple / white) |
+| `branding/icon.png` / `icon.ico` | Generated app icon (white square + Biloop loop) |
 | `branding/icon-*.png` | Pre-rendered sizes (convenience) |
-| `scripts/gen-icon.py` | Regenerates the PNG/ICO from code (`pip install pillow`) |
+| `scripts/biloop_icons.py` | Shared icon-composition helpers |
+| `scripts/gen-icon.py` | Regenerates the desktop PNG/ICO (`pip install pillow`) |
 
-> The current logo is a **placeholder** (purple `#6C2BD9` "B" mark). To use the
-> real Biloop logo, drop your own `icon.png` (1024×1024) and `icon.ico` into
-> `branding/` — or edit `icon.svg` and run `python scripts/gen-icon.py` — then
-> rebuild. Update names/colors in `branding/branding.json`.
+> Icons use the official Biloop logo (the purple "loop" mark on a white
+> background). To update artwork, replace `branding/source/logomark.png` and run
+> `python scripts/gen-icon.py` and `python scripts/gen-android-icons.py`, then
+> rebuild. Names/colors live in `branding/branding.json`.
+
+## Android (Biloop Talk for Android)
+
+Builds the **[Nextcloud Talk Android](https://github.com/nextcloud/talk-android)**
+client, rebranded as **Biloop Talk**, into an installable **APK**.
+
+- Workflow: [`.github/workflows/build-android.yml`](.github/workflows/build-android.yml)
+  builds on `ubuntu-latest` (JDK 17), runs `./gradlew assembleGenericDebug`
+  (the F-Droid "generic" flavor, no Google services — debug-signed so it can be
+  sideloaded), and publishes the APK to the **`android-latest`** Release.
+- Build script: [`scripts/build-android.sh`](scripts/build-android.sh).
+- Branding: [`scripts/apply-branding-android.sh`](scripts/apply-branding-android.sh)
+  sets the app name to **Biloop Talk** (`res/values/setup.xml`) and replaces the
+  launcher icon (white background + the Biloop purple loop foreground +
+  legacy mipmaps). Icon assets live in `branding/android/` and are regenerated
+  by [`scripts/gen-android-icons.py`](scripts/gen-android-icons.py).
+
+Run it from the **Actions** tab → **Build Talk Android (APK)** → **Run
+workflow**, then download `Biloop.Talk-android.apk` from the
+[`android-latest` release](../../releases/tag/android-latest). On the device,
+enable "Install unknown apps" to sideload.
+
+> The APK is **debug-signed** and keeps the upstream `applicationId`
+> (`com.nextcloud.talk2`). For a Play-style release build, add a signing
+> keystore as secrets and switch the task to `assembleGenericRelease`.
+
+## iOS (Biloop Talk for iOS)
+
+Builds the **[Nextcloud Talk iOS](https://github.com/nextcloud/talk-ios)** client,
+rebranded as **Biloop Talk**, into an **unsigned `.ipa`**.
+
+- Workflow: [`.github/workflows/build-ios.yml`](.github/workflows/build-ios.yml)
+  builds on `macos-latest` (`pod install` + `xcodebuild archive` with code
+  signing disabled), packages an unsigned `.ipa`, and publishes it to the
+  **`ios-latest`** Release.
+- Build script: [`scripts/build-ios.sh`](scripts/build-ios.sh);
+  branding: [`scripts/apply-branding-ios.sh`](scripts/apply-branding-ios.sh)
+  sets the display name (`Info.plist`), brand color and disables server theming
+  (`NCAppBranding.m`), rebrands "Nextcloud" → "Biloop" in `Localizable.strings`,
+  and replaces the `AppIcon` PNGs (`scripts/gen-ios-icon.py`).
+
+> **Signing:** Apple requires a Developer certificate + provisioning profile to
+> produce an installable build. The artifact here is **unsigned** — install it
+> by sideloading with **AltStore/Sideloadly** (they re-sign with your Apple ID)
+> or re-sign with your own certificate. To produce a signed build directly, add
+> your signing assets as repository secrets and wire them into the archive step.
 
 ## Notes on this environment
 

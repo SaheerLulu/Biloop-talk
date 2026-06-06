@@ -1,5 +1,7 @@
-# Cloned upstream source (fetched by scripts/build.sh)
+# Cloned upstream source (fetched by the build scripts)
 /upstream/
+/upstream-android/
+/upstream-ios/
 
 # Build output
 dist/
@@ -13,3 +15,7 @@ npm-debug.log*
 # OS cruft
 .DS_Store
 Thumbs.db
+
+# Python
+__pycache__/
+*.pyc

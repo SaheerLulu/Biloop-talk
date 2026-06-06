@@ -72,7 +72,7 @@ jobs:
         if: steps.gate.outputs.run == 'true'
         uses: actions/checkout@v4
         with:
-          repository: nextcloud/talk_desktop
+          repository: nextcloud/talk-desktop
           # Blank ref = upstream's default branch. Override via the run input.
           ref: ${{ github.event.inputs.ref }}
           path: upstream
@@ -100,17 +100,11 @@ jobs:
         if: steps.gate.outputs.run == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: talk-desktop-${{ matrix.name }}
+          name: biloop-talk-${{ matrix.name }}
           if-no-files-found: warn
           retention-days: 14
           path: |
+            upstream/out/make/**/*
             upstream/dist/**/*.exe
             upstream/dist/**/*.dmg
             upstream/dist/**/*.zip
-            upstream/dist/**/*.blockmap
-            upstream/dist/**/*.yml
-            upstream/dist/**/*.pkg
-            upstream/out/**/*.exe
-            upstream/out/**/*.dmg
-            upstream/release/**/*.exe
-            upstream/release/**/*.dmg

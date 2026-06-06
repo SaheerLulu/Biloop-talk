@@ -1,5 +1,6 @@
-# Cloned upstream source (fetched by scripts/build.sh)
+# Cloned upstream source (fetched by the build scripts)
 /upstream/
+/upstream-android/
 
 # Build output
 dist/

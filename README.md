@@ -114,6 +114,31 @@ Branding assets:
 > `branding/` — or edit `icon.svg` and run `python scripts/gen-icon.py` — then
 > rebuild. Update names/colors in `branding/branding.json`.
 
+## Android (Biloop Talk for Android)
+
+Builds the **[Nextcloud Talk Android](https://github.com/nextcloud/talk-android)**
+client, rebranded as **Biloop Talk**, into an installable **APK**.
+
+- Workflow: [`.github/workflows/build-android.yml`](.github/workflows/build-android.yml)
+  builds on `ubuntu-latest` (JDK 17), runs `./gradlew assembleGenericDebug`
+  (the F-Droid "generic" flavor, no Google services — debug-signed so it can be
+  sideloaded), and publishes the APK to the **`android-latest`** Release.
+- Build script: [`scripts/build-android.sh`](scripts/build-android.sh).
+- Branding: [`scripts/apply-branding-android.sh`](scripts/apply-branding-android.sh)
+  sets the app name to **Biloop Talk** (`res/values/setup.xml`) and replaces the
+  launcher icon (purple `#6C2BD9` background vector + white "B" foreground +
+  legacy mipmaps). Icon assets live in `branding/android/` and are regenerated
+  by [`scripts/gen-android-icons.py`](scripts/gen-android-icons.py).
+
+Run it from the **Actions** tab → **Build Talk Android (APK)** → **Run
+workflow**, then download `Biloop.Talk-android.apk` from the
+[`android-latest` release](../../releases/tag/android-latest). On the device,
+enable "Install unknown apps" to sideload.
+
+> The APK is **debug-signed** and keeps the upstream `applicationId`
+> (`com.nextcloud.talk2`). For a Play-style release build, add a signing
+> keystore as secrets and switch the task to `assembleGenericRelease`.
+
 ## Notes on this environment
 
 These build steps deliberately run on CI/native machines rather than inside the

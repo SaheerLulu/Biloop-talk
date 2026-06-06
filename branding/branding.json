@@ -6,9 +6,9 @@
   "author": "Biloop <info@biloop.ai>",
   "homepage": "https://biloop.ai",
   "copyright": "Copyright © Biloop",
-  "brandColor": "#6C2BD9",
-  "brandColorDark": "#4E1CA0",
-  "brandGradient": "linear-gradient(40deg, #6C2BD9 0%, #8B5CF6 100%)",
+  "brandColor": "#502C6F",
+  "brandColorDark": "#3D1063",
+  "brandGradient": "linear-gradient(40deg, #502C6F 0%, #8445EE 100%)",
   "brandFontColor": "#FFFFFF",
   "icon": {
     "png": "icon.png",

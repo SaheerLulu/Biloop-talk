@@ -89,7 +89,7 @@ merges over its defaults and flips `BUILD_CONFIG.isBranded` to `true`.
 What gets rebranded:
 
 - **App name** (window title, login/help screens, About, user-agent) → `Biloop Talk`
-- **Brand colors** → primary `#6C2BD9`, matching gradient and font color
+- **Brand colors** → primary `#502C6F`, loop gradient `#3D1063` → `#8445EE`
 - **`isBranded` behavior** → hides the upstream Nextcloud homepage / issues /
   source links and disables the GitHub release update-checker
 - **App icon** → `img/icons/icon.{ico,icns,png}` used by electron-forge for the
@@ -103,16 +103,17 @@ Branding assets:
 | File | Purpose |
 | --- | --- |
 | `branding/branding.json` | Name, colors and metadata (single source of truth) |
-| `branding/icon.png` | 1024×1024 master icon |
-| `branding/icon.ico` | Multi-size Windows icon |
-| `branding/icon.svg` | Editable vector source |
+| `branding/source/logomark.png` | Official Biloop logo (loop is extracted as the icon) |
+| `branding/source/wordmark-*.png` | Full "Biloop" wordmarks (purple / white) |
+| `branding/icon.png` / `icon.ico` | Generated app icon (white square + Biloop loop) |
 | `branding/icon-*.png` | Pre-rendered sizes (convenience) |
-| `scripts/gen-icon.py` | Regenerates the PNG/ICO from code (`pip install pillow`) |
+| `scripts/biloop_icons.py` | Shared icon-composition helpers |
+| `scripts/gen-icon.py` | Regenerates the desktop PNG/ICO (`pip install pillow`) |
 
-> The current logo is a **placeholder** (purple `#6C2BD9` "B" mark). To use the
-> real Biloop logo, drop your own `icon.png` (1024×1024) and `icon.ico` into
-> `branding/` — or edit `icon.svg` and run `python scripts/gen-icon.py` — then
-> rebuild. Update names/colors in `branding/branding.json`.
+> Icons use the official Biloop logo (the purple "loop" mark on a white
+> background). To update artwork, replace `branding/source/logomark.png` and run
+> `python scripts/gen-icon.py` and `python scripts/gen-android-icons.py`, then
+> rebuild. Names/colors live in `branding/branding.json`.
 
 ## Android (Biloop Talk for Android)
 
@@ -126,7 +127,7 @@ client, rebranded as **Biloop Talk**, into an installable **APK**.
 - Build script: [`scripts/build-android.sh`](scripts/build-android.sh).
 - Branding: [`scripts/apply-branding-android.sh`](scripts/apply-branding-android.sh)
   sets the app name to **Biloop Talk** (`res/values/setup.xml`) and replaces the
-  launcher icon (purple `#6C2BD9` background vector + white "B" foreground +
+  launcher icon (white background + the Biloop purple loop foreground +
   legacy mipmaps). Icon assets live in `branding/android/` and are regenerated
   by [`scripts/gen-android-icons.py`](scripts/gen-android-icons.py).
 

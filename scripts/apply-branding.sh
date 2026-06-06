@@ -46,6 +46,8 @@ const overrides = {
   brandColor: b.brandColor,
   brandGradient: b.brandGradient,
   brandFontColor: b.brandFontColor,
+  primaryColor: b.brandColor,
+  backgroundColor: b.brandColor,
 };
 fs.writeFileSync(outPath, JSON.stringify(overrides, null, 2) + '\n');
 console.log('    + .overrides/build.config.json (isBranded=true): ' + b.productName);

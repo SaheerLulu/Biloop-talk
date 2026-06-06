@@ -25,6 +25,9 @@ if [[ -z "$PLATFORM" ]]; then
   exit 2
 fi
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
 REPO_URL="${TALK_DESKTOP_REPO:-https://github.com/nextcloud/talk_desktop.git}"
 REF="${TALK_DESKTOP_REF:-main}"
 WORK_DIR="${WORK_DIR:-upstream}"
@@ -48,6 +51,15 @@ fi
 
 cd "$WORK_DIR"
 echo "==> Checked out commit: $(git rev-parse --short HEAD)"
+UPSTREAM_ABS="$(pwd)"
+
+# --- Apply Biloop branding --------------------------------------------------
+# Set APPLY_BRANDING=0 to build vanilla upstream instead.
+if [[ "${APPLY_BRANDING:-1}" != "0" ]]; then
+  bash "$REPO_ROOT/scripts/apply-branding.sh" "$UPSTREAM_ABS"
+else
+  echo "==> APPLY_BRANDING=0, skipping branding"
+fi
 
 # --- Install dependencies ---------------------------------------------------
 if [[ -f package-lock.json ]]; then

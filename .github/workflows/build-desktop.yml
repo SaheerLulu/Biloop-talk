@@ -17,6 +17,8 @@ on:
     paths:
       - '.github/workflows/build-desktop.yml'
       - 'scripts/build.sh'
+      - 'scripts/apply-branding.sh'
+      - 'branding/**'
   workflow_dispatch:
     inputs:
       ref:

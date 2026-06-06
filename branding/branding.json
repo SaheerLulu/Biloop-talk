@@ -1,0 +1,15 @@
+{
+  "productName": "Biloop Talk",
+  "appId": "ai.biloop.talk.desktop",
+  "packageName": "biloop-talk",
+  "description": "Biloop Talk — desktop client for chat, video calls and meetings",
+  "author": "Biloop <info@biloop.ai>",
+  "homepage": "https://biloop.ai",
+  "copyright": "Copyright © Biloop",
+  "brandColor": "#6C2BD9",
+  "brandColorDark": "#4E1CA0",
+  "icon": {
+    "png": "icon.png",
+    "ico": "icon.ico"
+  }
+}

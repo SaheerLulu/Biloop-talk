@@ -1,6 +1,7 @@
 # Biloop Talk — Desktop build
 
-Build infrastructure for the **[Nextcloud Talk Desktop](https://github.com/nextcloud/talk_desktop)**
+Build infrastructure for **Biloop Talk**, a branded build of the
+**[Nextcloud Talk Desktop](https://github.com/nextcloud/talk_desktop)**
 client (the Electron-based desktop app for Nextcloud Talk), producing
 installers for **Windows** and **macOS**.
 
@@ -69,6 +70,40 @@ The script will:
 - Git.
 - For **macOS** builds: a Mac with Xcode command line tools.
 - For **Windows** builds: a Windows machine (native NSIS build, no Wine needed).
+
+## Biloop branding
+
+The build is rebranded as **Biloop Talk** automatically. Branding lives in
+[`branding/`](branding/) and is applied to the cloned upstream by
+[`scripts/apply-branding.sh`](scripts/apply-branding.sh) before packaging
+(`build.sh` calls it automatically; set `APPLY_BRANDING=0` to build vanilla
+upstream).
+
+What gets rebranded:
+
+- **App name / installer name** → `Biloop Talk`
+- **App identity** → `appId: ai.biloop.talk.desktop`
+- **Icons** → the Biloop icon for Windows (`.ico`), macOS (`.icns`, generated
+  by electron-builder from the 1024px PNG) and Linux, plus in-tree app/tray
+  icons
+- **Metadata** → description, author (`info@biloop.ai`), homepage
+  (`https://biloop.ai`), copyright
+
+Branding assets:
+
+| File | Purpose |
+| --- | --- |
+| `branding/branding.json` | Name, appId, colors and metadata (single source of truth) |
+| `branding/icon.png` | 1024×1024 master icon |
+| `branding/icon.ico` | Multi-size Windows icon |
+| `branding/icon.svg` | Editable vector source |
+| `branding/icon-*.png` | Pre-rendered sizes (Linux / convenience) |
+| `scripts/gen-icon.py` | Regenerates the PNG/ICO from code (`pip install pillow`) |
+
+> The current logo is a **placeholder** (purple `#6C2BD9` "B" mark). To use the
+> real Biloop logo, drop your own `icon.png` (1024×1024) and `icon.ico` into
+> `branding/` — or replace `icon.svg` and run `python scripts/gen-icon.py` —
+> then rebuild. Update names/colors in `branding/branding.json`.
 
 ## Notes on this environment
 

@@ -17,12 +17,14 @@ on:
     paths:
       - '.github/workflows/build-desktop.yml'
       - 'scripts/build.sh'
+      - 'scripts/apply-branding.sh'
+      - 'branding/**'
   workflow_dispatch:
     inputs:
       ref:
-        description: 'Upstream branch or tag of nextcloud/talk_desktop to build'
+        description: 'Upstream branch/tag of nextcloud/talk_desktop (blank = default branch)'
         required: false
-        default: 'main'
+        default: ''
       platforms:
         description: 'Which platforms to build'
         required: false
@@ -66,6 +68,16 @@ jobs:
             echo "::notice::Skipping ${{ matrix.name }} (not in selection: $SELECTED)"
           fi
 
+      - name: Check out upstream Talk Desktop source
+        if: steps.gate.outputs.run == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: nextcloud/talk-desktop
+          # Blank ref = upstream's default branch. Override via the run input.
+          ref: ${{ github.event.inputs.ref }}
+          path: upstream
+          submodules: recursive
+
       - name: Set up Node.js
         if: steps.gate.outputs.run == 'true'
         uses: actions/setup-node@v4
@@ -76,6 +88,8 @@ jobs:
         if: steps.gate.outputs.run == 'true'
         shell: bash
         env:
+          # Source is already checked out into ./upstream by the step above,
+          # so build.sh reuses it instead of cloning.
           TALK_DESKTOP_REF: ${{ github.event.inputs.ref || 'main' }}
           # Build unsigned by default. To produce signed builds, add the
           # appropriate secrets and remove this / set the CSC_* vars.
@@ -86,17 +100,60 @@ jobs:
         if: steps.gate.outputs.run == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: talk-desktop-${{ matrix.name }}
+          name: biloop-talk-${{ matrix.name }}
           if-no-files-found: warn
           retention-days: 14
           path: |
+            upstream/out/make/**/*
             upstream/dist/**/*.exe
             upstream/dist/**/*.dmg
             upstream/dist/**/*.zip
-            upstream/dist/**/*.blockmap
-            upstream/dist/**/*.yml
-            upstream/dist/**/*.pkg
-            upstream/out/**/*.exe
-            upstream/out/**/*.dmg
-            upstream/release/**/*.exe
-            upstream/release/**/*.dmg
+
+  # Publish the built installers to a GitHub Release so they can be downloaded
+  # directly from the repo's Releases tab (assets allow up to 2 GB each, unlike
+  # the 100 MB hard limit on files committed into the repo tree).
+  release:
+    name: Publish installers to a Release
+    needs: build
+    # Run even if one platform failed, so we still publish whatever built.
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Collect installers
+        id: collect
+        shell: bash
+        run: |
+          mkdir -p release
+          # Keep only the user-facing installers (skip Squirrel deltas/metadata).
+          find artifacts -type f \( \
+                -name '*.exe' -o -name '*.dmg' -o -name '*.msi' \
+              \) -exec cp -v {} release/ \;
+          echo "--- release/ ---"; ls -la release || true
+          count=$(find release -type f | wc -l | tr -d ' ')
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+
+      - name: Publish/Update "desktop-latest" release
+        if: steps.collect.outputs.count != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          TAG="desktop-latest"
+          TITLE="Biloop Talk — desktop installers (build ${{ github.run_number }})"
+          NOTES="Automated build from \`${{ github.sha }}\` on $(date -u +%Y-%m-%dT%H:%MZ).
+          Unsigned builds — Windows SmartScreen / macOS Gatekeeper will warn on first launch."
+          # Recreate the moving tag so the download links stay stable.
+          gh release delete "$TAG" --repo "${{ github.repository }}" --cleanup-tag --yes || true
+          gh release create "$TAG" release/* \
+            --repo "${{ github.repository }}" \
+            --target "${{ github.ref_name }}" \
+            --title "$TITLE" \
+            --notes "$NOTES"
+          echo "Published: $(gh release view "$TAG" --repo "${{ github.repository }}" --json url -q .url)"

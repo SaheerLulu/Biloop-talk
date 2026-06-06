@@ -8,6 +8,7 @@
   "copyright": "Copyright © Biloop",
   "brandColor": "#502C6F",
   "brandColorDark": "#3D1063",
+  "brandColorLight": "#8445EE",
   "brandGradient": "linear-gradient(40deg, #502C6F 0%, #8445EE 100%)",
   "brandFontColor": "#FFFFFF",
   "helpUrl": "https://biloop.ai",

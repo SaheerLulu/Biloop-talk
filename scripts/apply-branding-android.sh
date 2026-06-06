@@ -57,6 +57,25 @@ while IFS= read -r -d '' f; do
 done < <(find "$RES/../.." -path '*/res/values*/strings.xml' -print0 2>/dev/null)
 echo "    + rebranded Nextcloud -> Biloop in $nc_count strings.xml file(s)"
 
+# --- 1c. Brand color: replace Nextcloud blue with Biloop purple -------------
+BC="$(node -e "process.stdout.write(require('$BRANDING_DIR/branding.json').brandColor)")"
+BCD="$(node -e "process.stdout.write(require('$BRANDING_DIR/branding.json').brandColorDark)")"
+BCL="$(node -e "process.stdout.write(require('$BRANDING_DIR/branding.json').brandColorLight)")"
+# Map the Nextcloud palette -> Biloop purple in the brand color surfaces only
+# (theme colors.xml + the default avatar gradient), not functional file icons.
+brand_recolor() {
+  local f="$1"; [[ -f "$f" ]] || return 0
+  sed -i -E \
+    -e "s/#([Ff]{2})0082[Cc]9/#\1${BC#\#}/g" -e "s/#0082[Cc]9/${BC}/g" \
+    -e "s/#006[Aa]A3/${BCD}/Ig" \
+    -e "s/#([Ff]{2})1[Cc][Aa][Ff][Ff][Ff]/#\1${BCL#\#}/g" -e "s/#1[Cc][Aa][Ff][Ff][Ff]/${BCL}/g" \
+    "$f"
+}
+brand_recolor "$RES/values/colors.xml"
+brand_recolor "$RES/values-night/colors.xml"
+brand_recolor "$RES/drawable/ic_avatar_background.xml"
+echo "    + brand color -> ${BC} (colors.xml, avatar gradient)"
+
 # --- 2. Launcher icon -------------------------------------------------------
 # Remove the upstream launcher background/foreground resources so our copies
 # are the single definition of each resource name (avoid duplicate-resource

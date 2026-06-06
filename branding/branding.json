@@ -10,6 +10,8 @@
   "brandColorDark": "#3D1063",
   "brandGradient": "linear-gradient(40deg, #502C6F 0%, #8445EE 100%)",
   "brandFontColor": "#FFFFFF",
+  "helpUrl": "https://biloop.ai",
+  "privacyUrl": "https://biloop.ai/privacy",
   "icon": {
     "png": "icon.png",
     "ico": "icon.ico"

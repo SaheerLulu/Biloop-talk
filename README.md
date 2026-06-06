@@ -140,6 +140,27 @@ enable "Install unknown apps" to sideload.
 > (`com.nextcloud.talk2`). For a Play-style release build, add a signing
 > keystore as secrets and switch the task to `assembleGenericRelease`.
 
+## iOS (Biloop Talk for iOS)
+
+Builds the **[Nextcloud Talk iOS](https://github.com/nextcloud/talk-ios)** client,
+rebranded as **Biloop Talk**, into an **unsigned `.ipa`**.
+
+- Workflow: [`.github/workflows/build-ios.yml`](.github/workflows/build-ios.yml)
+  builds on `macos-latest` (`pod install` + `xcodebuild archive` with code
+  signing disabled), packages an unsigned `.ipa`, and publishes it to the
+  **`ios-latest`** Release.
+- Build script: [`scripts/build-ios.sh`](scripts/build-ios.sh);
+  branding: [`scripts/apply-branding-ios.sh`](scripts/apply-branding-ios.sh)
+  sets the display name (`Info.plist`), brand color and disables server theming
+  (`NCAppBranding.m`), rebrands "Nextcloud" → "Biloop" in `Localizable.strings`,
+  and replaces the `AppIcon` PNGs (`scripts/gen-ios-icon.py`).
+
+> **Signing:** Apple requires a Developer certificate + provisioning profile to
+> produce an installable build. The artifact here is **unsigned** — install it
+> by sideloading with **AltStore/Sideloadly** (they re-sign with your Apple ID)
+> or re-sign with your own certificate. To produce a signed build directly, add
+> your signing assets as repository secrets and wire them into the archive step.
+
 ## Notes on this environment
 
 These build steps deliberately run on CI/native machines rather than inside the

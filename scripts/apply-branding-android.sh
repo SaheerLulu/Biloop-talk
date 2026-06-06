@@ -41,11 +41,21 @@ if [[ -f "$SETUP" ]]; then
   sed -E -i \
     -e "s#(<string name=\"nc_app_name\">)[^<]*(</string>)#\1${APP_NAME}\2#" \
     -e "s#(<string name=\"nc_app_product_name\">)[^<]*(</string>)#\1${APP_NAME}\2#" \
+    -e "s#(<string name=\"nc_server_product_name\">)[^<]*(</string>)#\1Biloop#" \
     "$SETUP"
-  echo "    + app name -> ${APP_NAME}"
+  echo "    + app name -> ${APP_NAME}, server product name -> Biloop"
 else
   echo "    ! $SETUP not found, skipping app name" >&2
 fi
+
+# --- 1b. Replace remaining "Nextcloud" mentions in user-facing strings ------
+# Only touch string resources (display text), never code/package identifiers.
+nc_count=0
+while IFS= read -r -d '' f; do
+  sed -i -e 's/Nextcloud Talk/Biloop Talk/g' -e 's/Nextcloud/Biloop/g' "$f"
+  nc_count=$((nc_count+1))
+done < <(find "$RES/../.." -path '*/res/values*/strings.xml' -print0 2>/dev/null)
+echo "    + rebranded Nextcloud -> Biloop in $nc_count strings.xml file(s)"
 
 # --- 2. Launcher icon -------------------------------------------------------
 # Remove the upstream launcher background/foreground resources so our copies

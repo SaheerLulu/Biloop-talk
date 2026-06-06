@@ -61,11 +61,41 @@ else
   echo "==> APPLY_BRANDING=0, skipping branding"
 fi
 
-# --- Install dependencies ---------------------------------------------------
+# --- Install Talk Desktop dependencies --------------------------------------
 if [[ -f package-lock.json ]]; then
   npm ci
 else
   npm install
+fi
+
+# --- Provision the built-in Nextcloud Talk frontend (spreed) ----------------
+# Talk Desktop embeds the Nextcloud Talk web frontend. forge.config.js requires
+# TALK_PATH to point at a spreed checkout *with* node_modules installed. The
+# matching Talk version is pinned in package.json -> talk[CHANNEL].
+CHANNEL="${CHANNEL:-stable}"
+SPREED_REPO="${SPREED_REPO:-https://github.com/nextcloud/spreed.git}"
+TALK_PATH="${TALK_PATH:-$UPSTREAM_ABS/spreed}"
+export TALK_PATH
+
+if [[ ! -d "$TALK_PATH/node_modules" ]]; then
+  TALK_VERSION="${TALK_VERSION:-$(node -e "process.stdout.write(String(require('./package.json').talk?.['$CHANNEL'] ?? ''))")}"
+  if [[ -z "$TALK_VERSION" ]]; then
+    echo "error: could not determine Talk version (package.json talk.$CHANNEL)" >&2
+    exit 1
+  fi
+  echo "==> Built-in Talk: $CHANNEL -> $TALK_VERSION"
+
+  if [[ ! -d "$TALK_PATH/.git" ]]; then
+    echo "==> Cloning spreed@$TALK_VERSION into $TALK_PATH"
+    git clone --branch="$TALK_VERSION" --depth=1 -- "$SPREED_REPO" "$TALK_PATH"
+  fi
+
+  echo "==> Installing spreed dependencies (npm ci --prefix)"
+  # Skip heavy/optional test-tool binaries that spreed pulls in.
+  CYPRESS_INSTALL_BINARY=0 PUPPETEER_SKIP_DOWNLOAD=true \
+    npm ci --prefix "$TALK_PATH" --no-audit --no-fund
+else
+  echo "==> Reusing existing Talk frontend at $TALK_PATH"
 fi
 
 # --- Resolve the right build scripts ----------------------------------------

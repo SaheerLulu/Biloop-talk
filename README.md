@@ -64,8 +64,12 @@ The script will:
    `TALK_DESKTOP_REPO` / `TALK_DESKTOP_REF`; reuses an existing checkout).
 2. Apply Biloop branding (set `APPLY_BRANDING=0` to skip).
 3. Install dependencies (`npm ci`).
-4. Run `npm run build:<platform>` then `npm run package:<platform>`.
-5. Print where the installers were written (`upstream/out/make/`).
+4. Provision the built-in **Nextcloud Talk frontend (`spreed`)**: clone it at
+   the version pinned in `package.json` → `talk.<channel>` (default channel
+   `stable`) and install its dependencies. Override with `TALK_PATH` (reuse an
+   existing checkout), `TALK_VERSION`, or `CHANNEL`.
+5. Run `npm run build:<platform>` then `npm run package:<platform>`.
+6. Print where the installers were written (`upstream/out/make/`).
 
 ### Requirements
 

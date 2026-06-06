@@ -113,6 +113,14 @@ esac
 # Allow unsigned builds (no signing certs in CI by default).
 export CSC_IDENTITY_AUTO_DISCOVERY="${CSC_IDENTITY_AUTO_DISCOVERY:-false}"
 
+# Bundling the Talk web frontend with webpack is memory-hungry and overruns
+# Node's default ~2 GB heap (the macOS runner OOMs). Raise it unless the caller
+# already set a limit. 6144 MB fits within the ~7 GB macOS runner.
+if [[ "${NODE_OPTIONS:-}" != *max-old-space-size* ]]; then
+  export NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--max-old-space-size=6144"
+fi
+echo "==> NODE_OPTIONS=$NODE_OPTIONS"
+
 HAS() { node -e "process.exit(require('./package.json').scripts?.['$1']?0:1)" 2>/dev/null; }
 
 if HAS "build:$LONG" && HAS "package:$LONG"; then

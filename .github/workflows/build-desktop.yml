@@ -22,9 +22,9 @@ on:
   workflow_dispatch:
     inputs:
       ref:
-        description: 'Upstream branch or tag of nextcloud/talk_desktop to build'
+        description: 'Upstream branch/tag of nextcloud/talk_desktop (blank = default branch)'
         required: false
-        default: 'main'
+        default: ''
       platforms:
         description: 'Which platforms to build'
         required: false
@@ -68,6 +68,16 @@ jobs:
             echo "::notice::Skipping ${{ matrix.name }} (not in selection: $SELECTED)"
           fi
 
+      - name: Check out upstream Talk Desktop source
+        if: steps.gate.outputs.run == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: nextcloud/talk_desktop
+          # Blank ref = upstream's default branch. Override via the run input.
+          ref: ${{ github.event.inputs.ref }}
+          path: upstream
+          submodules: recursive
+
       - name: Set up Node.js
         if: steps.gate.outputs.run == 'true'
         uses: actions/setup-node@v4
@@ -78,6 +88,8 @@ jobs:
         if: steps.gate.outputs.run == 'true'
         shell: bash
         env:
+          # Source is already checked out into ./upstream by the step above,
+          # so build.sh reuses it instead of cloning.
           TALK_DESKTOP_REF: ${{ github.event.inputs.ref || 'main' }}
           # Build unsigned by default. To produce signed builds, add the
           # appropriate secrets and remove this / set the CSC_* vars.

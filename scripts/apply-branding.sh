@@ -102,4 +102,25 @@ fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
 console.log('    + package.json: productName=' + b.productName);
 NODE
 
+# --- 4. Installer assets ----------------------------------------------------
+# macOS DMG background (the blue Nextcloud-branded image shown while installing).
+if [[ -f "$BRANDING_DIR/dmg-background.png" ]]; then
+  for bg in "$UPSTREAM_ABS/img/dmg-background.png" "$UPSTREAM_ABS/img/dmg-background@2x.png"; do
+    [[ -f "$bg" ]] || continue
+    if command -v sips >/dev/null 2>&1; then
+      W=$(sips -g pixelWidth "$bg" | awk '/pixelWidth/{print $2}')
+      H=$(sips -g pixelHeight "$bg" | awk '/pixelHeight/{print $2}')
+      sips -s format png -z "$H" "$W" "$BRANDING_DIR/dmg-background.png" --out "$bg" >/dev/null
+    else
+      cp "$BRANDING_DIR/dmg-background.png" "$bg"
+    fi
+    echo "    ~ $(basename "$bg") (Biloop DMG background)"
+  done
+fi
+
+# Windows Squirrel installer icon URL (was the nextcloud raw icon).
+FORGE="$UPSTREAM_ABS/forge.config.js"
+[[ -f "$FORGE" ]] && perl -i -pe "s{iconUrl: '[^']*'}{iconUrl: 'https://raw.githubusercontent.com/SaheerLulu/Biloop-talk/main/branding/icon.ico'}" "$FORGE" \
+  && echo "    + forge.config.js Squirrel iconUrl -> Biloop"
+
 echo "==> Branding applied."
